@@ -14,8 +14,11 @@ app.use(express.json());
 app.listen(PORT, () => {
     console.log( `on port: ${PORT}` );
 })
+const allowedOrigin = [
+    "http://localhost:5173", "https://lynkx-ui.onrender.com"
+]
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigin,
     credentials: true
 }))
 app.use("/api/user/", router);
