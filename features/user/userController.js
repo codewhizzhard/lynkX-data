@@ -3,10 +3,12 @@ import User from "./model/userDetails.js";
 /* const jwt = require("jsonwebtoken") */
 import jwt from "jsonwebtoken";
 
-import { verifyMessage } from 'viem';
+import { verifyMessage, getAddress } from 'viem';
 
 const findOrCreateUser = async (address) => {
-    let user = await User.findOne({address: address.toLowerCase()});
+    
+    
+    let user = await User.findOne({address});
     if (user) {
        user.lastLogin = new Date();
        await user.save();
@@ -22,14 +24,16 @@ const findOrCreateUser = async (address) => {
 const login = async (req, res) => {
     const {address, message, signature} = req.body;
 
+    const checksumAddress = getAddress(address);
+
     const userValid = await verifyMessage({
-        address, message, signature
+        address: checksumAddress, message, signature
     })
 
     if (!userValid) {
         res.status(401).json({message: "user not signed in"})
     }
-    const user = await findOrCreateUser(address);
+    const user = await findOrCreateUser(checksumAddress);
    
     const token = jwt.sign({
         user: {
