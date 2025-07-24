@@ -2,9 +2,9 @@
 import jwt from "jsonwebtoken";
 
 const authmiddleware = async(req, res, next) => {
-     let authHeaders = req.headers.Authorization || req.headers.Authorization
+     let authHeaders = req.headers.authorization 
 
-     if (authHeaders & authHeaders.startsWith("Bearer")) {
+     if (authHeaders && authHeaders.startsWith("Bearer")) {
         const token = authHeaders.split(" ")[1];
         jwt.verify(token, process.env.SECRET, (err, decoded) => {
             if(err) {

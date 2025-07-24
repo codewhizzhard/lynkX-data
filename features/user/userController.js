@@ -23,6 +23,8 @@ const findOrCreateUser = async (address) => {
 
 const login = async (req, res) => {
     const {address, message, signature} = req.body;
+    console.log("req.body:", req.body)
+    if (!address || !message || !signature) return res.status(400).json({message: "No data sent"})
 
     const checksumAddress = getAddress(address);
 
@@ -31,7 +33,7 @@ const login = async (req, res) => {
     })
 
     if (!userValid) {
-        res.status(401).json({message: "user not signed in"})
+       return  res.status(401).json({message: "user not signed in"})
     }
     const user = await findOrCreateUser(checksumAddress);
    
@@ -42,7 +44,7 @@ const login = async (req, res) => {
         }
     }, process.env.SECRET, {expiresIn: "7d"});
 
-    res.status(200).json({
+    return res.status(200).json({
         message: "login successful",
         data: {
             address: user.address,
@@ -53,5 +55,22 @@ const login = async (req, res) => {
 
 }
 
+const changeProfile = async (req, res) => {
+    const {address, username, about} = req.body;
+    try {
+         if (!address || (!username && !about)) {
+            return res.status(400).json({message: "No data is passed"});
+        }
+        const checksumAddress = getAddress(address)
+        const user = await User.findOneAndUpdate({address: checksumAddress}, {username, about}, {new: true, runValidators: true})
+        //console.log("user:", user)
+        if (!user) return res.status(400).json({message: "This User has not being registered"})
+        return res.status(200).json({data: user})
+        } catch (err) {
+            console.log("error:", err)
+        }
+   
+}
+
 //module.exports = {login}
-export { login };
+export { login, changeProfile };
