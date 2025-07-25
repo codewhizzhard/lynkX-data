@@ -2,7 +2,7 @@ import express from "express";
 
 const router = express.Router();
 
-import {login, changeProfile} from "./userController.js";
+import {login, changeProfile, getUserDetails} from "./userController.js";
 import authmiddleware from "./userMiddleware.js";
 
 router.post("/auth", login);
@@ -17,5 +17,6 @@ router.post("/ping", (req, res) => {
 
 router.use(authmiddleware);
 router.post("/changeProfile", changeProfile);
+router.get("/getUserDetails/:address", getUserDetails);
 
 export default router;

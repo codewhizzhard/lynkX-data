@@ -46,11 +46,7 @@ const login = async (req, res) => {
 
     return res.status(200).json({
         message: "login successful",
-        data: {
-            address: user.address,
-            lastLogin: user.lastLogin,
-            userToken: token
-        }
+        data: {user, token}
     })
 
 }
@@ -72,5 +68,20 @@ const changeProfile = async (req, res) => {
    
 }
 
+const getUserDetails = async (req, res) => {
+    try {
+        const {address} = req.params;
+    console.log("add", address);
+    const checksumAddress = getAddress(address)
+    const user = await User.findOne({address: checksumAddress})
+    if (!user) return res.status(400).json({message: "User not registered"})
+    return res.status(200).json({message: "User details successfully fetched", data: user});
+
+    } catch (err) {
+        console.log("err:", err)
+    }
+    
+}
+
 //module.exports = {login}
-export { login, changeProfile };
+export { login, changeProfile, getUserDetails };
