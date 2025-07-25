@@ -28,7 +28,14 @@ const createWallet = async (req, res) => {
         let user = await User.findOne({address: checksumAddress})
         if (!user) return res.status(400).json({message: "user not found"});
         //console.log("user:", user);
-        if (user.wallets && user.wallets.length > 0) return res.status(200).json({message: "Wallet already created", user});
+        const rolesMap = {
+            merchant: 2,
+            liquidityProvider: 7,
+            treasuryManager: 7
+        };
+        const limit = rolesMap[user.role];
+        //if (user.wallets && user.wallets.length > 0) return res.status(200).json({message: "Wallet already created", user});
+        if (user.wallets >= limit ) return res.status(400).json({message: "You have reached the maximum number of wallets you can create"})
        
         const walletsResponse = await client.createWallets({
         blockchains,
