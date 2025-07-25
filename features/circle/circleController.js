@@ -25,20 +25,26 @@ const createWallet = async (req, res) => {
         if (!checksumAddress || !blockchains) {
             return res.status(400).json({message: "All fields are required to create a wallet"});
         }
-        const user = await User.findOne({address: checksumAddress})
+        let user = await User.findOne({address: checksumAddress})
         if (!user) return res.status(400).json({message: "user not found"});
-        console.log("user:", user);
+        //console.log("user:", user);
         const walletsResponse = await client.createWallets({
         blockchains,
         count: 1,
         walletSetId: walletSetResponse.data?.walletSet?.id ?? '',
         })
-        console.log("user", {...user.toObject(), wallets: walletsResponse.data?.wallets})
+       
+        user.wallets = walletsResponse.data?.wallets || [];
+        await user.save();
+         console.log('Created Wallets', user)
+        
+        return res.status(201).json({message: "wallet succesfully created", user})
+        //console.log("user", {...user.toObject(), wallets: walletsResponse.data?.wallets})
         //if (walletSetResponse) return res.status(201).json({})
 
-        //console.log('Created Wallets', walletsResponse.data?.wallets)
+        //
     } catch (err) {
-
+        console.log("err:", err)
     }
 }
 

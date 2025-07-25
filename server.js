@@ -6,7 +6,6 @@ import connectDB from "./config/database.js";
 import cors from "cors";
 import circleRouter from "./features/circle/circleRoute.js";
 
-
 const PORT = process.env.PORT || 5001
 
 //console.log('API Key ->', process.env.API_KEY);
@@ -26,6 +25,7 @@ app.use(express.json());
 app.use("/api/user", router);
 app.use("/api/user", circleRouter);
 connectDB();
+
 
 
 app.use((err, req, res, next) => {
