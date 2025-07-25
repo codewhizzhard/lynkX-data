@@ -28,9 +28,28 @@ const createWallet = async (req, res) => {
         let user = await User.findOne({address: checksumAddress})
         if (!user) return res.status(400).json({message: "user not found"});
         //console.log("user:", user);
+        let count;
+        /* switch (user.role) {
+            case "merchant":
+                count = 2
+                block;
+            case "liquidity-provider":
+                count = 7
+                block;
+            case "treasury-manager":
+                count = 7
+                block;
+            default:
+                count = 2
+        } */
+       const countMap = {
+            merchant: 2,
+            liquidityProvider: 7,
+            treasuryManager: 7
+       }
         const walletsResponse = await client.createWallets({
         blockchains,
-        count: 1,
+        count: countMap[user.role] ?? 2,
         walletSetId: walletSetResponse.data?.walletSet?.id ?? '',
         })
        

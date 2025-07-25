@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
     address: {
         type: String,
         required: true,
-        lowercase: true
+        lowercase: true,
+        unique: true
     },
     lastLogin: {
         type: Date,
@@ -14,7 +15,7 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["merchant", "liquidityProvider", "treasuryManager"],
+        enum: ["merchant", "liquidity-provider", "treasury-manager"],
         default: "merchant"
     },
     username: {
