@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5001
 const app = express();
 
 const allowedOrigin = [
-    "http://localhost:5173", "https://lynkx-ui.onrender.com"
+    "http://localhost:5174", "https://lynkx-ui.onrender.com"
 ]
 app.use(cors({
     origin: allowedOrigin,
