@@ -75,7 +75,7 @@ const changeProfile = async (req, res) => {
         }
    
 }
-
+//
 const getUserDetails = async (req, res) => {
     try {
         const {address} = req.params;
