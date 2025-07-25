@@ -23,6 +23,10 @@ const UserSchema = new mongoose.Schema({
     },
     about: {
         type: String,
+    },
+    wallets: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     }
 
 }, {

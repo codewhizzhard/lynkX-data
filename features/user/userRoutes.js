@@ -7,10 +7,7 @@ import authmiddleware from "./userMiddleware.js";
 
 router.post("/auth", login);
 
-router.post("/ping", (req, res) => {
-  console.log("Ping body:", req.body);
-  res.json({ got: req.body });
-});
+
 
 
 //authmiddleware// authMiddleware for protected route

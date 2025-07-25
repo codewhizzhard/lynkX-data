@@ -1,13 +1,16 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
 import router from "./features/user/userRoutes.js";
 import connectDB from "./config/database.js";
 import cors from "cors";
+import circleRouter from "./features/circle/circleRoute.js";
+import User from "./features/user/model/userDetails.js";
 
-dotenv.config();
+
 const PORT = process.env.PORT || 5001
 
-
+//console.log('API Key ->', process.env.API_KEY);
 const app = express();
 
 const allowedOrigin = [
@@ -22,6 +25,7 @@ app.use(express.json());
 
 
 app.use("/api/user", router);
+app.use("/api/user", circleRouter);
 connectDB();
 
 app.use((err, req, res, next) => {

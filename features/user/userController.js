@@ -1,9 +1,17 @@
 //const User = require("./model/userDetails");
+import dotenv from "dotenv";
+dotenv.config();
 import User from "./model/userDetails.js";
 /* const jwt = require("jsonwebtoken") */
 import jwt from "jsonwebtoken";
+import { generateEntitySecret } from '@circle-fin/developer-controlled-wallets';
+import { registerEntitySecretCiphertext } from '@circle-fin/developer-controlled-wallets'
+import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets'
 
 import { verifyMessage, getAddress } from 'viem';
+//console.log("entitykey", generateEntitySecret())
+
+
 
 const findOrCreateUser = async (address) => {
     
