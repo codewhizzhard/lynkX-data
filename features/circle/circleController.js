@@ -33,9 +33,10 @@ const createWallet = async (req, res) => {
         count: 1,
         walletSetId: walletSetResponse.data?.walletSet?.id ?? '',
         })
-        if (walletSetResponse) return res.status(201).json({})
+        console.log("user", {...user.toObject(), wallets: walletsResponse.data?.wallets})
+        //if (walletSetResponse) return res.status(201).json({})
 
-        console.log('Created Wallets', walletsResponse.data?.wallets)
+        //console.log('Created Wallets', walletsResponse.data?.wallets)
     } catch (err) {
 
     }

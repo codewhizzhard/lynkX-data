@@ -25,8 +25,8 @@ const UserSchema = new mongoose.Schema({
         type: String,
     },
     wallets: {
-        type: mongoose.Schema.Types.Mixed,
-        default: {}
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
     }
 
 }, {

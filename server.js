@@ -5,7 +5,6 @@ import router from "./features/user/userRoutes.js";
 import connectDB from "./config/database.js";
 import cors from "cors";
 import circleRouter from "./features/circle/circleRoute.js";
-import User from "./features/user/model/userDetails.js";
 
 
 const PORT = process.env.PORT || 5001
@@ -27,6 +26,7 @@ app.use(express.json());
 app.use("/api/user", router);
 app.use("/api/user", circleRouter);
 connectDB();
+
 
 app.use((err, req, res, next) => {
     console.error("Unhandled Error:", err.stack);
