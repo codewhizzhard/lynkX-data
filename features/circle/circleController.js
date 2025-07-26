@@ -7,16 +7,15 @@ import { getAddress } from "viem";
 import User from "../user/model/userDetails.js";
 
 
-
-const client =  initiateDeveloperControlledWalletsClient({
-  apiKey: process.env.API_KEY,
+ const client =  initiateDeveloperControlledWalletsClient({
+  apiKey: process.env.CIRCLE_API_KEY,
   entitySecret: process.env.ENTITY_SECRET,
 })
 const walletSetResponse = await client.createWalletSet({
   name: 'LynkX',
 })
 console.log("waale:", walletSetResponse.data?.walletSet?.id);
-
+ 
 //console.log('Created WalletSet', walletSetResponse.data?.walletSet)
 const createWallet = async (req, res) => {
     try {

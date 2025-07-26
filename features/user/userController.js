@@ -9,7 +9,7 @@ import { registerEntitySecretCiphertext } from '@circle-fin/developer-controlled
 import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets'
 
 import { verifyMessage, getAddress } from 'viem';
-//console.log("entitykey", generateEntitySecret())
+
 
 
 
