@@ -14,7 +14,7 @@ import User from "../user/model/userDetails.js";
 const walletSetResponse = await client.createWalletSet({
   name: 'LynkX',
 })
-console.log("waale:", walletSetResponse.data?.walletSet?.id);
+//console.log("waale:", walletSetResponse.data?.walletSet?.id);
  
 //console.log('Created WalletSet', walletSetResponse.data?.walletSet)
 const createWallet = async (req, res) => {
