@@ -22,7 +22,7 @@ const createWallet = async (req, res) => {
         const { address, blockchains, walletName} = req.body;
         if (!address) return res.status(400).json({message: "address is required"})
         const checksumAddress = getAddress(address)
-        if (!checksumAddress || !Array.isArray(blockchains) || blockchains.length === 0 || !name) {
+        if (!checksumAddress || !Array.isArray(blockchains) || blockchains.length === 0 || !walletName) {
             return res.status(400).json({message: "All fields are required to create a wallet"});
         }
         let user = await User.findOne({address: checksumAddress})
