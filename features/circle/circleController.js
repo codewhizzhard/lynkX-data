@@ -33,9 +33,10 @@ const createWallet = async (req, res) => {
             liquidityProvider: 7,
             treasuryManager: 7
         };
+        console.log("role:", user.role)
         const limit = rolesMap[user.role];
         //if (user.wallets && user.wallets.length > 0) return res.status(200).json({message: "Wallet already created", user});
-        if (user.wallets >= limit ) return res.status(400).json({message: "You have reached the maximum number of wallets you can create"})
+        if (user.wallets.length >= limit ) return res.status(400).json({message: "You have reached the maximum number of wallets you can create"})
        
         const walletsResponse = await client.createWallets({
         blockchains,
