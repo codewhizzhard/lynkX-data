@@ -135,6 +135,7 @@ const getTransactions = async (req, res) => {
     if (!response.data) return res.status(400).json({message: "getting transactions failed"})
     return res.status(200).json({message: 'successfully fetched transactions', data: response.data?.transactions})
     //console.log("res:", response.data?.transactions)
+    //
 }
 
 export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions}

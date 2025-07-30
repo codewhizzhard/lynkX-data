@@ -11,6 +11,6 @@ circleRouter.get("/getUserAddresses/:address", getAllUserWalletAddress);
 circleRouter.get("/getSpecificAddress/:address/:id", getSpecificWallet);
 circleRouter.get("/get-wallet-address/:id", getWalletBalance);
 circleRouter.post("/send-transaction", sendTransaction);
-circleRouter.post("/get-transactions", getTransactions);
+circleRouter.get("/get-transactions", getTransactions);
 
 export default circleRouter;
