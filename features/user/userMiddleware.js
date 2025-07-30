@@ -10,7 +10,7 @@ const authmiddleware = async(req, res, next) => {
             if(err) {
                 res.status(401).json({message: "user not authorized"})
             }
-            req.user = decoded.user;
+            req.user = decoded?.user;
             next();
         })
         
