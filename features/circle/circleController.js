@@ -160,18 +160,34 @@ const changeVaultName = async(req,res) => {
         if (!checksumAddress || !vaultName || !checkVaultAddress) {
             return res.status(400).json({message: "All field must be filled"});
         }
-        const user = await User.findOne({address: checksumAddress})
+        //const user = await User.findOneAndUpdate({address: checksumAddress, "wallets.address": checkVaultAddress}, {$set: {"wallets.$.walletName": vaultName}}, {new: true})
+         const result = await User.updateOne(
+            { address: checksumAddress.toLowerCase(), "wallets.address": checkVaultAddress.toLowerCase() },
+            { $set: { "wallets.$.walletName": vaultName } }
+            );
+
+            if (result.matchedCount === 0) {
+            return res.status(404).json({ message: "Wallet not found" });
+            }
+            const updatedUser = await User.findOne({ address: checksumAddress });
+            console.log("DB After Save >>>", updatedUser);
+
+            return res.json({ message: "Wallet name updated successfully" });
+        {/* const user = await User.findOne({address: checksumAddress})
         if (!user) return res.status(401).json({message: "Invalid user"});
         const walletToChange = user.wallets.find((wallet) => getAddress(wallet.address) === checkVaultAddress)
         if (!walletToChange) {
             return res.status(404).json({ message: "Wallet not found" });
         }
         walletToChange.walletName = vaultName;
-        await user.save();
-        return res.json({ message: "Wallet name updated successfully", data: user });
+        await user.save(); */}
+        //const updatedUser = await User.findOne({ address: checksumAddress });
+        //console.log("DB After Save >>>", updatedUser);
+        //return res.json({ message: "Wallet name updated successfully", data: user });
     } catch (err) {
         console.log("err:", err)
     }
 }
+
 
 export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName}
