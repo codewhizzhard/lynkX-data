@@ -105,12 +105,18 @@ const getWalletBalance = async (req, res) => {
 }
 
 const sendTransaction = async(req, res) => {
+    const {amount, destinationAddress, tokenId, walletId, fee} = req.body;
+
+    if ((!amount && amount.length === 0) || !destinationAddress || !tokenId || !walletId || !fee) {
+        console.log("hhh");
+    }
     // call 
     //const {amount, tokenId, destinationAddress, fee, walletId} = req.body;
     //if (!amount || !tokenId || !destinationAddress || !fee || !walletId) return res.status(400).json({message: "All field are required"});
     // call the circle backend
     try {
         const response = await client.createTransaction({
+        
         amount: ['0.01'],
         destinationAddress: "0x9be0d97aba9e2fe6eb12802406a46d5b5e686a7b",
         tokenId: "bdf128b4-827b-5267-8f9e-243694989b5f",
@@ -143,4 +149,29 @@ const getTransactions = async (req, res) => {
     //
 }
 
-export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions}
+const changeVaultName = async(req,res) => {
+    try {
+        const {address, vaultName, vaultAddress} = req.body; 
+        if (!address || !vaultAddress) {
+            return res.status(400).json({message: "All field must be filled"});
+        }
+        const checksumAddress = getAddress(address);
+        const checkVaultAddress = getAddress(vaultAddress);
+        if (!checksumAddress || !vaultName || !checkVaultAddress) {
+            return res.status(400).json({message: "All field must be filled"});
+        }
+        const user = await User.findOne({address: checksumAddress})
+        if (!user) return res.status(401).json({message: "Invalid user"});
+        const walletToChange = user.wallets.find((wallet) => getAddress(wallet.address) === checkVaultAddress)
+        if (!walletToChange) {
+            return res.status(404).json({ message: "Wallet not found" });
+        }
+        walletToChange.walletName = vaultName;
+        await user.save();
+        return res.json({ message: "Wallet name updated successfully", data: user });
+    } catch (err) {
+        console.log("err:", err)
+    }
+}
+
+export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName}

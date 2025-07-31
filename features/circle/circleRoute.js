@@ -1,6 +1,6 @@
 import express from "express";
 import authmiddleware from "../user/userMiddleware.js";
-import { createWallet, getAllUserWalletAddress, getSpecificWallet, getTransactions, getWalletBalance, sendTransaction } from "./circleController.js";
+import { changeVaultName, createWallet, getAllUserWalletAddress, getSpecificWallet, getTransactions, getWalletBalance, sendTransaction } from "./circleController.js";
 
 const circleRouter = express.Router();
 
@@ -12,5 +12,6 @@ circleRouter.get("/getSpecificAddress/:address/:id", getSpecificWallet);
 circleRouter.get("/get-wallet-address/:id", getWalletBalance);
 circleRouter.post("/send-transaction", sendTransaction);
 circleRouter.get("/get-transactions", getTransactions);
+circleRouter.post("/change-vaultName", changeVaultName);
 
 export default circleRouter;
