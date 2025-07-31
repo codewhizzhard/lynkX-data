@@ -111,7 +111,7 @@ const sendTransaction = async(req, res) => {
     // call the circle backend
     try {
         const response = await client.createTransaction({
-        amount: '0.01',
+        amount: ['0.01'],
         destinationAddress: "0x9be0d97aba9e2fe6eb12802406a46d5b5e686a7b",
         tokenId: "bdf128b4-827b-5267-8f9e-243694989b5f",
         walletId: "7465e3a3-baa4-512f-b25c-c5ff3c0342e4",
@@ -122,15 +122,20 @@ const sendTransaction = async(req, res) => {
             },
         },
         })
-        //console.log(response.data)
+        console.log(response?.data)
+        return res.status(200).json({message: "sent", data: response?.data})
     } catch (err) {
-        //console.log("err:", err)
+        console.log("err:", err)
+        return res.json({message: err})
+        console.log("err:", err)
     }
     
 
 }
 
 const getTransactions = async (req, res) => {
+    const ren = client.listWallets()
+    console.log("ren:", ren)
     const response = await client.listTransactions()
     if (!response.data) return res.status(400).json({message: "getting transactions failed"})
     return res.status(200).json({message: 'successfully fetched transactions', data: response.data?.transactions})
