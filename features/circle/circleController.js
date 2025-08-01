@@ -105,16 +105,57 @@ const getWalletBalance = async (req, res) => {
 }
 
 const sendTransaction = async(req, res) => {
-    const {amount, destinationAddress, tokenId, walletId, fee} = req.body;
+   const {amount, destinationAddress, tokenId, walletId, blockchain} = req.body;
 
-    if ((!amount && amount.length === 0) || !destinationAddress || !tokenId || !walletId || !fee) {
-        console.log("hhh");
+    if (!amount || !destinationAddress || !tokenId || !walletId || !blockchain) {
+        return res.status(400).json({message: "All fields are required to fulfill the transactions"})
     }
+   try {
+      const response = await client.validateAddress({
+        address: destinationAddress.toLowerCase(),
+        blockchain,
+    });
+     console.log(response.data?.isValid); 
+     if (!response.data?.isValid) {
+        return res.status(404).json({message: "address is not valid, check and try again"})
+     }
+      const send = await client.createTransaction({
+        amount: [String(amount)],
+        destinationAddress: destinationAddress.toLowerCase(),
+        tokenId,
+        walletId,
+        fee: {
+            type: 'level',
+            config: {
+            feeLevel: 'MEDIUM',
+            },
+        },
+        })
+        return res.status(201).json({message: "sent successfully", data: send?.data})
+     
+   /*  const estimateFee = await client.estimateTransferFee({
+    amount: ['0.02'],
+    destinationAddress: "0x9be0d97aba9e2fe6eb12802406a46d5b5e686a7b",
+    tokenId: "bdf128b4-827b-5267-8f9e-243694989b5f",
+    walletId: "7465e3a3-baa4-512f-b25c-c5ff3c0342e4",
+    });
+    console.log("estimate:",  estimateFee?.data)  */
+   
+
+   
+
+   } catch (err) {
+    console.log("err:", err)
+    res.json(err)
+
+   }
+    
+
     // call 
     //const {amount, tokenId, destinationAddress, fee, walletId} = req.body;
     //if (!amount || !tokenId || !destinationAddress || !fee || !walletId) return res.status(400).json({message: "All field are required"});
     // call the circle backend
-    try {
+  /*   try {
         const response = await client.createTransaction({
         
         amount: ['0.01'],
@@ -134,7 +175,7 @@ const sendTransaction = async(req, res) => {
         console.log("err:", err)
         return res.json({message: err})
         console.log("err:", err)
-    }
+    } */
     
 
 }
@@ -169,9 +210,6 @@ const changeVaultName = async(req,res) => {
             if (result.matchedCount === 0) {
             return res.status(404).json({ message: "Wallet not found" });
             }
-            const updatedUser = await User.findOne({ address: checksumAddress });
-            console.log("DB After Save >>>", updatedUser);
-
             return res.json({ message: "Wallet name updated successfully" });
         {/* const user = await User.findOne({address: checksumAddress})
         if (!user) return res.status(401).json({message: "Invalid user"});
