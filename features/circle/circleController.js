@@ -7,6 +7,7 @@ import { getAddress } from "viem";
 import User from "../user/model/userDetails.js";
 import Payments from "./model/paymentDetail.js";
 import { v4 as uuidv4 } from "uuid";
+import mongoose from "mongoose";
 
 
  const client =  initiateDeveloperControlledWalletsClient({
@@ -206,6 +207,24 @@ const postPaymentInfo = async (req, res) => {
   }
 };
 
+const getParticularPayment = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({message: "invalid payment ID"})
+    const payment = await Payments.findById(id);
+    if (!payment) return res.status(400).json({message: "user has no payment details"})
+    console.log("iiiii", payment)
+    return res.status(200).json({message: "Payment details found successfully", payment})
+}
+
+const getUserPaymentsHistory = async (req, res) => {
+    const { address } = req.params;
+    if (!address) return res.status(400).json({message: "address required"})
+    const checksumAddress = getAddress(address);
+    const payments = await Payments.find({userAddress: checksumAddress});
+    if (!payments) return res.status(400).json({message: "user has no payment history"})
+    console.log("iiiii", payments)
+    return res.status(200).json({message: "Payments history found successfully", payments})
+}
 
 
-export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName, postPaymentInfo}
+export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName, postPaymentInfo, getParticularPayment, getUserPaymentsHistory}
