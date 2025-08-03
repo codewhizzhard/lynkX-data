@@ -197,7 +197,7 @@ const postPaymentInfo = async (req, res) => {
         const paymentObj = payment.toObject();
 
         // Add custom field (if needed)
-        paymentObj.paymentLink = `http://localhost:5174/pay/${uuidv4()}`; 
+        paymentObj.paymentLink = `http://localhost:5174/pay/${paymentObj._id}`; 
     return res.status(201).json({ message: "Payment created successfully", paymentObj});
 
   } catch (error) {
