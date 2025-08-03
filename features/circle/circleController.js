@@ -5,6 +5,8 @@ import { registerEntitySecretCiphertext } from '@circle-fin/developer-controlled
 import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets'
 import { getAddress } from "viem";
 import User from "../user/model/userDetails.js";
+import Payments from "./model/paymentDetail.js";
+import { v4 as uuidv4 } from "uuid";
 
 
  const client =  initiateDeveloperControlledWalletsClient({
@@ -132,51 +134,12 @@ const sendTransaction = async(req, res) => {
         },
         })
         return res.status(201).json({message: "sent successfully", data: send?.data})
-     
-   /*  const estimateFee = await client.estimateTransferFee({
-    amount: ['0.02'],
-    destinationAddress: "0x9be0d97aba9e2fe6eb12802406a46d5b5e686a7b",
-    tokenId: "bdf128b4-827b-5267-8f9e-243694989b5f",
-    walletId: "7465e3a3-baa4-512f-b25c-c5ff3c0342e4",
-    });
-    console.log("estimate:",  estimateFee?.data)  */
-   
-
-   
 
    } catch (err) {
     console.log("err:", err)
     res.json(err)
 
    }
-    
-
-    // call 
-    //const {amount, tokenId, destinationAddress, fee, walletId} = req.body;
-    //if (!amount || !tokenId || !destinationAddress || !fee || !walletId) return res.status(400).json({message: "All field are required"});
-    // call the circle backend
-  /*   try {
-        const response = await client.createTransaction({
-        
-        amount: ['0.01'],
-        destinationAddress: "0x9be0d97aba9e2fe6eb12802406a46d5b5e686a7b",
-        tokenId: "bdf128b4-827b-5267-8f9e-243694989b5f",
-        walletId: "7465e3a3-baa4-512f-b25c-c5ff3c0342e4",
-        fee: {
-            type: 'level',
-            config: {
-            feeLevel: 'HIGH',
-            },
-        },
-        })
-        console.log(response?.data)
-        return res.status(200).json({message: "sent", data: response?.data})
-    } catch (err) {
-        console.log("err:", err)
-        return res.json({message: err})
-        console.log("err:", err)
-    } */
-    
 
 }
 
@@ -189,7 +152,6 @@ const getTransactions = async (req, res) => {
     //console.log("res:", response.data?.transactions)
     //
 }
-
 const changeVaultName = async(req,res) => {
     try {
         const {address, vaultName, vaultAddress} = req.body; 
@@ -211,21 +173,39 @@ const changeVaultName = async(req,res) => {
             return res.status(404).json({ message: "Wallet not found" });
             }
             return res.json({ message: "Wallet name updated successfully" });
-        {/* const user = await User.findOne({address: checksumAddress})
-        if (!user) return res.status(401).json({message: "Invalid user"});
-        const walletToChange = user.wallets.find((wallet) => getAddress(wallet.address) === checkVaultAddress)
-        if (!walletToChange) {
-            return res.status(404).json({ message: "Wallet not found" });
-        }
-        walletToChange.walletName = vaultName;
-        await user.save(); */}
-        //const updatedUser = await User.findOne({ address: checksumAddress });
-        //console.log("DB After Save >>>", updatedUser);
-        //return res.json({ message: "Wallet name updated successfully", data: user });
     } catch (err) {
         console.log("err:", err)
     }
 }
 
+const postPaymentInfo = async (req, res) => {
+  try {
+    const { userAddress, productName, orderId, amount, receiverAddress } = req.body;
+    const checksumAddress = getAddress(userAddress);
 
-export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName}
+    if (amount == null || !receiverAddress || !checksumAddress) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const payment = await Payments.create({
+        userAddress: checksumAddress,
+        productName: productName || null,
+        orderId: orderId || null,
+        amount,
+        receiverAddress
+        });
+        const paymentObj = payment.toObject();
+
+        // Add custom field (if needed)
+        paymentObj.paymentLink = `http://localhost:5174/pay/${uuidv4()}`; 
+    return res.status(201).json({ message: "Payment created successfully", paymentObj});
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
+export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName, postPaymentInfo}
