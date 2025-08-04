@@ -43,7 +43,7 @@ const PaymentSchema = new mongoose.Schema({
         symbol: { type: String, default: "USDC"},    // e.g., "USDC"
         address: { type: String, default: null},   // token contract address
         decimals: { type: Number, default: 18 },     // decimals for amount conversion
-        chain: { type: String, default: "Ethereum" } // or chainId if you prefer
+        chain: { type: String, required: true } // or chainId if you prefer
         }
 }, {timestamps: true})
 

@@ -181,10 +181,10 @@ const changeVaultName = async(req,res) => {
 
 const postPaymentInfo = async (req, res) => {
   try {
-    const { userAddress, productName, orderId, amount, receiverAddress } = req.body;
+    const { userAddress, productName, orderId, amount, receiverAddress, blockchain } = req.body;
     const checksumAddress = getAddress(userAddress);
 
-    if (amount == null || !receiverAddress || !checksumAddress) {
+    if (amount == null || !receiverAddress || !checksumAddress || !blockchain) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -193,12 +193,15 @@ const postPaymentInfo = async (req, res) => {
         productName: productName || null,
         orderId: orderId || null,
         amount,
-        receiverAddress
+        receiverAddress,
+        token: {
+            chain: blockchain
+        }
         });
         const paymentObj = payment.toObject();
 
         // Add custom field (if needed)
-        paymentObj.paymentLink = `http://localhost:5174/pay/${paymentObj._id}`; 
+        paymentObj.paymentLink = `https://localhost:5174/pay/${paymentObj._id}`; 
     return res.status(201).json({ message: "Payment created successfully", paymentObj});
 
   } catch (error) {
