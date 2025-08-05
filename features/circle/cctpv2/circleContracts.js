@@ -1,20 +1,4 @@
-/* const CCTP_ADDRESSES = {
-  ethereum: {
-    tokenMessenger: '0xBd3fa81B58Ba92a82136038B25aDec7066af3155',
-    messageTransmitter: '0x0a992d191deec32afe36203ad87d7d289a738f81',
-    usdc: '0xA0b86a33E6441E8Dd4c4b9A6b3f2D4565d7e1e8e'
-  },
-  arbitrum: {
-    tokenMessenger: '0x19330d10D9Cc8751218eaf51E8885D058642E08A',
-    messageTransmitter: '0xC30362313FBBA5cf9163F0bb16a0e01f01A896ca',
-    usdc: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
-  },
-  polygon: {
-    tokenMessenger: '0x9daF8c91AEFAE50b9c0E69629D3F6Ca40cA3B3FE',
-    messageTransmitter: '0xF3be9355363857F3e001be68856A2f96b4C39Ba9',
-    usdc: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'
-  }
-}; */
+
 export const circleContracts  = {
   TokenMessengerV2: {
     ethereumSepolia: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
@@ -85,4 +69,45 @@ export const chainExplorers = {
     apiKey: process.env.ETHERSCAN_API_KEY
   } */
 };
+
+// knownContracts.js
+
+export const knownContracts = {
+  // ==================== TokenMessengerV2 ====================
+  "ethereumsepolia-0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa": "TokenMessengerV2",
+  "avalanchefuji-0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa": "TokenMessengerV2",
+  "opsepolia-0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa": "TokenMessengerV2",
+  "arbitrumsepolia-0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa": "TokenMessengerV2",
+  "basesepolia-0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa": "TokenMessengerV2",
+  "polygonposamoy-0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa": "TokenMessengerV2",
+  "unichainsepolia-0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa": "TokenMessengerV2",
+
+  // ==================== MessageTransmitterV2 ====================
+  "ethereumsepolia-0xe737e5cebeeba77efe34d4aa090756590b1ce275": "MessageTransmitterV2",
+  "avalanchefuji-0xe737e5cebeeba77efe34d4aa090756590b1ce275": "MessageTransmitterV2",
+  "opsepolia-0xe737e5cebeeba77efe34d4aa090756590b1ce275": "MessageTransmitterV2",
+  "arbitrumsepolia-0xe737e5cebeeba77efe34d4aa090756590b1ce275": "MessageTransmitterV2",
+  "basesepolia-0xe737e5cebeeba77efe34d4aa090756590b1ce275": "MessageTransmitterV2",
+  "polygonposamoy-0xe737e5cebeeba77efe34d4aa090756590b1ce275": "MessageTransmitterV2",
+  "unichainsepolia-0xe737e5cebeeba77efe34d4aa090756590b1ce275": "MessageTransmitterV2",
+
+  // ==================== TokenMinterV2 ====================
+  "ethereumsepolia-0xb43db544e2c27092c107639ad201b3defabcf192": "TokenMinterV2",
+  "avalanchefuji-0xb43db544e2c27092c107639ad201b3defabcf192": "TokenMinterV2",
+  "opsepolia-0xb43db544e2c27092c107639ad201b3defabcf192": "TokenMinterV2",
+  "arbitrumsepolia-0xb43db544e2c27092c107639ad201b3defabcf192": "TokenMinterV2",
+  "basesepolia-0xb43db544e2c27092c107639ad201b3defabcf192": "TokenMinterV2",
+  "polygonposamoy-0xb43db544e2c27092c107639ad201b3defabcf192": "TokenMinterV2",
+  "unichainsepolia-0xb43db544e2c27092c107639ad201b3defabcf192": "TokenMinterV2",
+
+  // ==================== MessageV2 ====================
+  "ethereumsepolia-0xbac0179bb358a8936169a63408c8481d582390c4": "MessageV2",
+  "avalanchefuji-0xbac0179bb358a8936169a63408c8481d582390c4": "MessageV2",
+  "opsepolia-0xbac0179bb358a8936169a63408c8481d582390c4": "MessageV2",
+  "arbitrumsepolia-0xbac0179bb358a8936169a63408c8481d582390c4": "MessageV2",
+  "basesepolia-0xbac0179bb358a8936169a63408c8481d582390c4": "MessageV2",
+  "polygonposamoy-0xbac0179bb358a8936169a63408c8481d582390c4": "MessageV2",
+  "unichainsepolia-0xbac0179bb358a8936169a63408c8481d582390c4": "MessageV2"
+};
+
 
