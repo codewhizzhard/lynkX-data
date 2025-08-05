@@ -229,5 +229,8 @@ const getUserPaymentsHistory = async (req, res) => {
     return res.status(200).json({message: "Payments history found successfully", payments})
 }
 
+// CCTPV2 INTEGRATION
+
+
 
 export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName, postPaymentInfo, getParticularPayment, getUserPaymentsHistory}

@@ -5,6 +5,8 @@ import router from "./features/user/userRoutes.js";
 import connectDB from "./config/database.js";
 import cors from "cors";
 import circleRouter from "./features/circle/circleRoute.js";
+import cctpv2Router from "./features/circle/cctpv2/cctpv2Routes.js";
+import abiRouter from "./features/circle/cctpv2/cctpv2Abi.js";
 
 const PORT = process.env.PORT || 5001
 
@@ -23,7 +25,11 @@ app.use(express.json());
 
 
 app.use("/api/user", router);
+app.use("/api/abi", abiRouter);
+app.use("/api/users", cctpv2Router)
 app.use("/api/user", circleRouter);
+
+
 connectDB();
 
 app.use((err, req, res, next) => {
