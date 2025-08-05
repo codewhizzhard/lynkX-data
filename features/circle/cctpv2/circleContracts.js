@@ -1,4 +1,5 @@
-
+import dotenv from "dotenv";
+dotenv.config();
 export const circleContracts  = {
   TokenMessengerV2: {
     ethereumSepolia: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",

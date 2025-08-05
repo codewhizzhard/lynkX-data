@@ -66,6 +66,7 @@ abiRouter.get("/all", async (req, res) => {
 
         // Fetch from explorer
         try {
+          await new Promise((r) => setTimeout(r, 600));
           const abi = await fetchAbi(normalizedChain, address);
           abiCache[cacheKey] = { abi, contractName };
           saveCache();
