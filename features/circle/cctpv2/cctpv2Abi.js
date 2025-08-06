@@ -60,7 +60,7 @@ abiRouter.get("/all", async (req, res) => {
             address,
             contractName: abiCache[cacheKey].contractName || contractName,
             abi: abiCache[cacheKey].abi,
-            source: "fileCache"
+            source: "fileCache"/*  */
           };
         }
 

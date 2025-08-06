@@ -37,12 +37,12 @@ const getMsgAndAttestation = async(req, res) => {
 }
 
 const getUSDCGasFee = async(req, res) => {
-    const {sourceDomainId, destDomainId} = req.query;
+    const {sourceDomainId, destDomainId} = req.body;
     if (!sourceDomainId || !destDomainId) return res.status(400).json({message: "All fields are required"});
     try {
         const response = await circleClient.get(`/v2/burn/USDC/fees/${sourceDomainId}/${destDomainId}`)
         console.log("response:", response.data)
-        res.status(200).json({message: response.data})
+        return res.status(200).json({message: response.data})
     } catch (err) {
         console.log("err:", err)
         res.status(404).json({message: err})

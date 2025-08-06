@@ -25,7 +25,6 @@ app.use(express.json());
 
 
 app.use("/api/user", router);
-app.use("/api/abi", abiRouter);
 app.use("/api/users", cctpv2Router)
 app.use("/api/user", circleRouter);
 
