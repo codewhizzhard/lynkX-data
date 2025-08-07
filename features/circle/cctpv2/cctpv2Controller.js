@@ -37,7 +37,7 @@ const getMsgAndAttestation = async(req, res) => {
 }
 
 const getUSDCGasFee = async(req, res) => {
-    const {sourceDomainId, destDomainId} = req.body;
+    const {sourceDomainId, destDomainId} = req.params;
     if (!sourceDomainId || !destDomainId) return res.status(400).json({message: "All fields are required"});
     try {
         const response = await circleClient.get(`/v2/burn/USDC/fees/${sourceDomainId}/${destDomainId}`)

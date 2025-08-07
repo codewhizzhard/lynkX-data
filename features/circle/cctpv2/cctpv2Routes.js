@@ -6,5 +6,5 @@ const cctpv2Router = express.Router();
 
 cctpv2Router.get("/cctpv2/get-publicKeys", getPublicKeys);
 cctpv2Router.get("/cctpv2/get-msg/attest", getMsgAndAttestation);
-cctpv2Router.get("/cctpv2/get-usdc-fee", getUSDCGasFee);
+cctpv2Router.get("/cctpv2/get-usdc-fee/:sourceDomainId/:destDomainId", getUSDCGasFee);
 export default cctpv2Router;
