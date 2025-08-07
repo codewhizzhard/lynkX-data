@@ -35,6 +35,25 @@ const getMsgAndAttestation = async(req, res) => {
         res.status(404).json({message: err})
     }
 }
+    
+const getMsgAndAttes = async(req, res) => {
+    const {sourceDomainId, transactionHash} = req.params;
+
+    if (!sourceDomainId || !transactionHash) return res.status(400).json({message: "All fields required"});
+
+    try {
+        const res = await circleClient.get(`v2/messages/${sourceDomainId}`, {
+            params: {
+                transactionHash
+            }
+        })
+        if (!res) return res.status(400).json({message: "err"})
+        return res.status(200).json({message: "successfully fetched message", data: res})
+    } catch (err) {
+        console.log("err:", err)
+        return res.status(500).json({"ERROR": err})
+    }
+}
 
 const getUSDCGasFee = async(req, res) => {
     const {sourceDomainId, destDomainId} = req.params;
@@ -49,4 +68,4 @@ const getUSDCGasFee = async(req, res) => {
     }
 }
 
-export {getPublicKeys, getMsgAndAttestation, getUSDCGasFee}
+export {getPublicKeys, getMsgAndAttestation, getUSDCGasFee, getMsgAndAttes}
