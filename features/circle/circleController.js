@@ -32,7 +32,7 @@ const createWallet = async (req, res) => {
         if (!user) return res.status(400).json({message: "user not found"});
         //console.log("user:", user);
         const rolesMap = {
-            merchant: 2,
+            merchant: 4,
             liquidityProvider: 7,
             treasuryManager: 7
         };
