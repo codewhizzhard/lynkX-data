@@ -42,11 +42,12 @@ const createWallet = async (req, res) => {
         if (user.wallets.length >= limit ) return res.status(400).json({message: "You have reached the maximum number of wallets you can create"})
        
         const walletsResponse = await client.createWallets({
+        accountType: "SCA",
         blockchains,
         count: 1,
         walletSetId: walletSetResponse.data?.walletSet?.id ?? '',
         })
-        const wallet = walletsResponse?.data?.wallets.map((wallet) => ({...wallet, walletName}))
+        const wallet = walletsResponse?.data?.wallets.map((wallet) => ({...wallet, walletName,   isGasAsUsdc: false}))
         user.wallets = [...(user.wallets || []), ...wallet];
         await user.save();
          //console.log('Created Wallets', walletsResponse?.data?.wallets.map((wallet) => ({...wallet, name: "just"})))

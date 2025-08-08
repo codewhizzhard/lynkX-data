@@ -28,7 +28,10 @@ const UserSchema = new mongoose.Schema({
     wallets: {
         type: [mongoose.Schema.Types.Mixed],
         default: []
-    }
+    }, 
+    profilePicture: {
+        type: String,
+    },
 
 }, {
     timestamps: true

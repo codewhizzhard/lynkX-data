@@ -75,6 +75,32 @@ const changeProfile = async (req, res) => {
         }
    
 }
+const changeProfileImage = async (req, res) => {
+  const { address, profilePicture } = req.body;
+
+  if (!address || !profilePicture) {
+    return res.status(400).json({ message: "Address and profilePicture are required" });
+  }
+
+  try {
+    const checksumAddress = getAddress(address);
+
+    const user = await User.findOneAndUpdate(
+      { address: checksumAddress },
+      { profilePicture },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(400).json({ message: "User not registered" });
+    }
+
+    return res.status(200).json({ data: user });
+  } catch (err) {
+    console.error("Error updating profile picture:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 //
 const getUserDetails = async (req, res) => {
     try {
@@ -91,5 +117,6 @@ const getUserDetails = async (req, res) => {
     
 }
 
+
 //module.exports = {login}
-export { login, changeProfile, getUserDetails };
+export { login, changeProfile, getUserDetails, changeProfileImage };
