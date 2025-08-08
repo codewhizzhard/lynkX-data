@@ -38,17 +38,16 @@ const getMsgAndAttestation = async(req, res) => {
     
 const getMsgAndAttes = async(req, res) => {
     const {sourceDomainId, transactionHash} = req.params;
+    console.log("et:", sourceDomainId)
 
     if (!sourceDomainId || !transactionHash) return res.status(400).json({message: "All fields required"});
 
     try {
-        const res = await circleClient.get(`v2/messages/${sourceDomainId}`, {
-            params: {
-                transactionHash
-            }
-        })
-        if (!res) return res.status(400).json({message: "err"})
-        return res.status(200).json({message: "successfully fetched message", data: res})
+        const response = await circleClient.get(`v2/messages/${sourceDomainId}?transactionHash=${transactionHash}`)
+        if (!response) return res.status(400).json({message: "err"})
+               console.log("res", response.data)
+        return res.status(200).json({message: "successfully fetched message"})
+ 
     } catch (err) {
         console.log("err:", err)
         return res.status(500).json({"ERROR": err})
