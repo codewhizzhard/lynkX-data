@@ -45,8 +45,8 @@ const getMsgAndAttes = async(req, res) => {
     try {
         const response = await circleClient.get(`v2/messages/${sourceDomainId}?transactionHash=${transactionHash}`)
         if (!response) return res.status(400).json({message: "err"})
-               console.log("res", response.data)
-        return res.status(200).json({message: "successfully fetched message"})
+               //console.log("res", response.data)
+        return res.status(200).json({message: "successfully fetched message", data: response.data})
  
     } catch (err) {
         console.log("err:", err)
