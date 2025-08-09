@@ -8,6 +8,7 @@ import User from "../user/model/userDetails.js";
 import Payments from "./model/paymentDetail.js";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
+import Web3 from "web3";
 
 
  const client =  initiateDeveloperControlledWalletsClient({
@@ -17,6 +18,8 @@ import mongoose from "mongoose";
 const walletSetResponse = await client.createWalletSet({
   name: 'LynkX',
 })
+
+const web3 = new Web3(`https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`);
 //console.log("waale:", walletSetResponse.data?.walletSet?.id);
  
 //console.log('Created WalletSet', walletSetResponse.data?.walletSet)
@@ -231,8 +234,230 @@ const getUserPaymentsHistory = async (req, res) => {
     return res.status(200).json({message: "Payments history found successfully", payments})
 }
 
-// CCTPV2 INTEGRATION
+// CCTPV2 INTEGRATION FOR DEVELOPER CONTROLLED WALLET
+{/* 
+const approve = async(req, res) => {
+    //
+    const {walletId, funcSig, abiParameter1, abiParameter2, contractAddress} = req.body;
+    if (!walletId || !funcSig || !abiParameter1 || !abiParameter2 || !contractAddress) return res.status(400).json({message: "All fields are required"});
+
+    try {
+         const response = await client.createContractExecutionTransaction({
+        walletId: walletId,
+        abiFunctionSignature: funcSig,
+        abiParameters:  [abiParameter1, abiParameter2],
+        contractAddress: contractAddress,
+        fee: {
+        type: 'level',
+        config: {
+        feeLevel: 'MEDIUM'
+        }
+        }
+    });
+
+    return res.status(200).json({
+      message: "Transaction created successfully",
+      data: response
+    });
+    } catch (err) {
+        console.log("err:", err)
+    }
+
+   
+
+}
+const burn = async (req, res) => {
+  try {
+    const { walletId, burnAmount, destDomain, destAddress, usdcContract, tkMess } = req.body;
+    if (!walletId || !burnAmount || !destDomain || !destAddress || !usdcContract) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Encode destination address
+    const encodedDestinationAddress = web3.eth.abi.encodeParameter("address", destAddress);
+
+    const response = await client.createContractExecutionTransaction({
+      walletId,
+      abiFunctionSignature: "burn(uint256,uint32,bytes32,address)",
+      abiParameters: [
+        burnAmount, 
+        destDomain, 
+        encodedDestinationAddress, 
+        usdcContract
+      ],
+      contractAddress: tkMess,
+      fee: { type: "level", config: { feeLevel: "MEDIUM" } }
+    });
+
+    return res.json(response);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
+*/}
+
+const getAttestation = async (req, res) => {
+  try {
+    const { txHash } = req.params;
+
+    // Get transaction receipt
+    console.log("ha:", txHash)
+    const receipt = await web3.eth.getTransactionReceipt(txHash);
+    console.log("receipt:", receipt)
+    const eventTopic = web3.utils.keccak256("MessageSent(bytes)");
+    const log = receipt.logs.find((l) => l.topics[0] === eventTopic);
+    const messageBytes = web3.eth.abi.decodeParameters(["bytes"], log.data)[0];
+    const messageHash = web3.utils.keccak256(messageBytes);
+    console.log("messafeHas:",messageHash)
+
+    // Poll Circle attestation service
+    let attestationResponse = { status: "pending" };
+    while (attestationResponse.status !== "complete") {
+      const resp = await fetch(
+        `https://iris-api-sandbox.circle.com/attestations/${messageHash}`
+      );
+      attestationResponse = await resp.json();
+      console.log("atEase:", attestationResponse)
+      if (attestationResponse.status !== "complete") {
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+
+    return res.json(attestationResponse);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+const mint = async (req, res) => {
+  try {
+    const { walletId, message, attestation, contractAddress } = req.body;
+    if (!walletId || !message || !attestation || !contractAddress) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const response = await client.createContractExecutionTransaction({
+      walletId,
+      abiFunctionSignature: "receiveMessage(bytes,bytes)",
+      abiParameters: [message, attestation],
+      contractAddress,
+      fee: { type: "level", config: { feeLevel: "MEDIUM" } }
+    });
+    console.log("respon:", response)
+
+    //return res.json(response);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}; 
 
 
 
-export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName, postPaymentInfo, getParticularPayment, getUserPaymentsHistory}
+const handleCrossChain = async (req, res) => {
+  try {
+    const {
+      walletId,
+      burnAmount,
+      destDomain,
+      destAddress,
+      usdcContract,
+      tkMess,
+      msgTrans
+    } = req.body;
+
+    if (!walletId || !tkMess || !burnAmount || !destDomain || !destAddress || !usdcContract || !msgTrans) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // 1. APPROVE
+    console.log("Step 1: Approving USDC spending...");
+    const approveTx = await client.createContractExecutionTransaction({
+      walletId,
+      abiFunctionSignature: "approve(address,uint256)",
+      abiParameters: [tkMess, burnAmount], //tkMess
+      contractAddress: usdcContract,
+      fee: { type: "level", config: { feeLevel: "MEDIUM" } }
+    });
+
+    console.log("Approval transaction created:", approveTx);
+
+    // 2. BURN
+    console.log("Step 2: Burning USDC on source chain...");
+    const encodedDestinationAddress = web3.eth.abi.encodeParameter("address", destAddress);
+    const burnTx = await client.createContractExecutionTransaction({
+      walletId,
+      abiFunctionSignature: "burn(uint256,uint32,bytes32,address)",
+      abiParameters: [
+        burnAmount,
+        destDomain,
+        encodedDestinationAddress,
+        usdcContract
+      ],
+      contractAddress: tkMess,
+      fee: { type: "level", config: { feeLevel: "MEDIUM" } }
+    });
+
+    console.log("Burn transaction created:", burnTx);
+    console.log("Burn transaction created:", burnTx.data.id); // burnTx.status == 201
+
+     let transaction;
+    while (!transaction?.txHash) {
+      const txRes = await client.getTransaction({ id: burnTx.data.id });
+      transaction = txRes.data;
+      if (!transaction?.txHash) {
+        console.log("Waiting for txHash...");
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+
+    console.log("Source chain txHash:", transaction.txHash);
+
+    // 3. GET ATTESTATION
+    console.log("Step 3: Waiting for attestation...");
+    const receipt = await web3.eth.getTransactionReceipt(transaction.txHash);
+    const eventTopic = web3.utils.keccak256("MessageSent(bytes)");
+    const log = receipt.logs.find(l => l.topics[0] === eventTopic);
+    const messageBytes = web3.eth.abi.decodeParameters(["bytes"], log.data)[0];
+    const messageHash = web3.utils.keccak256(messageBytes);
+
+    let attestationResponse = { status: "pending" };
+    while (attestationResponse.status !== "complete") {
+      const resp = await fetch(`https://iris-api-sandbox.circle.com/attestations/${messageHash}`);
+      attestationResponse = await resp.json();
+      if (attestationResponse.status !== "complete") {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+
+    console.log("Attestation received:", attestationResponse);
+
+    // 4. MINT
+    console.log("Step 4: Minting USDC on destination chain...");
+    const mintTx = await client.createContractExecutionTransaction({
+      walletId,
+      abiFunctionSignature: "receiveMessage(bytes,bytes)",
+      abiParameters: [attestationResponse.message, attestationResponse.attestation],
+      contractAddress: msgTrans,
+      fee: { type: "level", config: { feeLevel: "MEDIUM" } }
+    });
+
+    console.log("Mint transaction created:", mintTx);
+
+    return res.json({
+      message: "Cross-chain transfer completed successfully",
+      approveTx,
+      burnTx,
+      attestationResponse,
+      mintTx
+    });
+
+  } catch (err) {
+    console.error("Error in handleCrossChain:", err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+
+export { createWallet, getAllUserWalletAddress, getSpecificWallet, getWalletBalance, sendTransaction, getTransactions, changeVaultName, postPaymentInfo, getParticularPayment, getUserPaymentsHistory, handleCrossChain, getAttestation, mint}
