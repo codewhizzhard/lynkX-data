@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
     },
     workspace: {
-        type: [string],
+        type: [String],
         default: []
     }
 
