@@ -18,6 +18,10 @@ const PaymentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Decimal128,
         required: true
     },
+    walletId: {
+        type: String,
+        required: true
+    },
     senderAddress: {
         type: String,
         lowercase: true,

@@ -186,10 +186,10 @@ const changeVaultName = async(req,res) => {
 
 const postPaymentInfo = async (req, res) => {
   try {
-    const { userAddress, productName, orderId, amount, receiverAddress, blockchain } = req.body;
+    const { userAddress, productName, orderId, amount, receiverAddress, blockchain, walletId } = req.body;
     const checksumAddress = getAddress(userAddress);
 
-    if (amount == null || !receiverAddress || !checksumAddress || !blockchain) {
+    if (amount == null || !receiverAddress || !checksumAddress || !blockchain || !walletId) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -199,6 +199,7 @@ const postPaymentInfo = async (req, res) => {
         orderId: orderId || null,
         amount,
         receiverAddress,
+        walletId,
         token: {
             chain: blockchain
         }
