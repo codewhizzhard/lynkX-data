@@ -345,9 +345,9 @@ const mint = async (req, res) => {
       contractAddress,
       fee: { type: "level", config: { feeLevel: "MEDIUM" } }
     });
-    console.log("respon:", response)
+    //console.log("respon:", response)
 
-    //return res.json(response);
+    return res.status(200).json({message: "Funds successfully added", data: response.data});
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
