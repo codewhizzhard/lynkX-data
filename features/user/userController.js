@@ -117,6 +117,19 @@ const getUserDetails = async (req, res) => {
     
 }
 
+const addWorkspace = async(req, res) => {
+    const {address, workspace} = req.body
+    if (!address || !workspace) return res.status(400).json({message: "Required all fields to continue"})
+    const checksumAddress = getAddress(address)
+    try {
+    const user = findOneAndUpdate({address: checksumAddress}, { $addToSet: { workspace: workspace } }, { new: true, runValidators: true })
+    if (!user) return res.status(404).json({message: "user not found"})
+    return res.status(200).json({message: "workspace added successfully", data: user})
+} catch (err) {
+    return res.status(500).json({ERROR: err})
+}
+}
+
 
 //module.exports = {login}
-export { login, changeProfile, getUserDetails, changeProfileImage };
+export { login, changeProfile, getUserDetails, changeProfileImage, addWorkspace };

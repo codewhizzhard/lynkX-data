@@ -47,6 +47,7 @@ const createWallet = async (req, res) => {
         count: 1,
         walletSetId: walletSetResponse.data?.walletSet?.id ?? '',
         })
+        
         const wallet = walletsResponse?.data?.wallets.map((wallet) => ({...wallet, walletName,   isGasAsUsdc: false}))
         user.wallets = [...(user.wallets || []), ...wallet];
         await user.save();
