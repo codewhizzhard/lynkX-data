@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import { generateEntitySecret } from '@circle-fin/developer-controlled-wallets';
 import { registerEntitySecretCiphertext } from '@circle-fin/developer-controlled-wallets'
-//import { initiateDeveloperControlledWalletsClient, createDeveloperControlledWalletsClient  } from '@circle-fin/developer-controlled-wallets'
+import { initiateDeveloperControlledWalletsClient  } from '@circle-fin/developer-controlled-wallets'
 import { getAddress } from "viem";
 import User from "../user/model/userDetails.js";
 import Payments from "./model/paymentDetail.js";
@@ -11,24 +11,13 @@ import mongoose from "mongoose";
 import Web3 from "web3";
 import { getMsgAndAttes } from "./cctpv2/cctpv2Controller.js";
 import https from "https";
-import pkg from '@circle-fin/developer-controlled-wallets';
+import { circleContracts, USDC_CONTRACTS } from "./cctpv2/circleContracts.js";
 
 
-async function clearDatabase() {
-  const collections = Object.keys(mongoose.connection.collections);
-  for (const collectionName of collections) {
-    const collection = mongoose.connection.collections[collectionName];
-    await collection.deleteMany({});
-  }
-  console.log('All documents deleted from all collections');
-}
-clearDatabase()
+const web3 = new Web3(`https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`);
 
-
-   //const web3 = new Web3(`https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`);
-
-const agent = new https.Agent({ keepAlive: false,  maxCachedSessions: 0 });
-const { initiateDeveloperControlledWalletsClient } = pkg;
+const agent = new https.Agent({ keepAlive: false,  maxCachedSessions: 0,  minVersion: 'TLSv1.2',
+  maxVersion: 'TLSv1.3', });
 
 const client = initiateDeveloperControlledWalletsClient ({
   apiKey: process.env.CIRCLE_API_KEY,
@@ -37,10 +26,7 @@ const client = initiateDeveloperControlledWalletsClient ({
 });
 
 
-const web3 = new Web3(`https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`);
-//console.log("waale:", walletSetResponse.data?.walletSet?.id);
- 
-//console.log('Created WalletSet', walletSetResponse.data?.walletSet)
+
 
 
 const createWallet = async (req, res) => {
@@ -178,7 +164,7 @@ const getTransactions = async (req, res) => {
     //console.log("res:", response.data?.transactions)
     //
 }
-const handleCrossChain = () =>  {}
+
 const changeVaultName = async(req,res) => {
     try {
         const {address, vaultName, vaultAddress} = req.body; 
@@ -258,40 +244,6 @@ const getUserPaymentsHistory = async (req, res) => {
 
 // CCTPV2 INTEGRATION FOR DEVELOPER CONTROLLED WALLET
 
-/* 
-const getAttestation = async (req, res) => {
-  try {
-    //const { txHash } = req.params;
-
-    // Get transaction receipt
-    console.log("ha:", txHash)
-    const receipt = await web3.eth.getTransactionReceipt(txHash);
-    console.log("receipt:", receipt)
-    const eventTopic = web3.utils.keccak256("MessageSent(bytes)");
-    const log = receipt.logs.find((l) => l.topics[0] === eventTopic);
-    const messageBytes = web3.eth.abi.decodeParameters(["bytes"], log.data)[0];
-    const messageHash = web3.utils.keccak256(messageBytes);
-    console.log("messafeHas:",messageHash)
-
-    // Poll Circle attestation service
-    let attestationResponse = { status: "pending" };
-    while (attestationResponse.status !== "complete") {
-      const resp = await fetch(
-        `https://iris-api-sandbox.circle.com/attestations/${messageHash}`
-      );
-      attestationResponse = await resp.json();
-      console.log("atEase:", attestationResponse)
-      if (attestationResponse.status !== "complete") {
-        await new Promise((r) => setTimeout(r, 2000));
-      }
-    }
-
-    return res.json(attestationResponse);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-} */
-
 const mint = async (req, res) => {
   try {
     const { walletId, message, attestation, contractAddress } = req.body;
@@ -314,66 +266,125 @@ const mint = async (req, res) => {
   }
 }; 
 
- //
-const approve = async(req, res) => {
-    //
-    const {walletId, funcSig, abiParameter1, abiParameter2, contractAddress} = req.body;
-    if (!walletId || !funcSig || !abiParameter1 || !abiParameter2 || !contractAddress) return res.status(400).json({message: "All fields are required"});
+function encodeAddressToBytes32(address) {
+  // This returns a hex string padded as a Solidity address representation (32 bytes)
+  return web3.eth.abi.encodeParameter('address', address);
+}
 
-    try {
-         const response = await client.createContractExecutionTransaction({
-        walletId: walletId,
-        abiFunctionSignature: funcSig,
-        abiParameters:  [abiParameter1, abiParameter2],
-        contractAddress: contractAddress,
-        fee: {
-        type: 'level',
-        config: {
-        feeLevel: 'MEDIUM'
-        }
-        }
-    });
+const handleCrossChain = async (req, res) => {
+  const domain = {
+  polygonAmoy: 7,
+  ethereumSepolia: 0,
+  baseSepolia: 6,
+  avalancheFuji: 1
+  }
+  
+  
+  const {walletId, sourceChain, amount, destChain, destinationAddress} = req.body
 
-    return res.status(200).json({
-      message: "Transaction created successfully",
-      data: response
-    });
-    } catch (err) {
-        console.log("err:", err)
+  const tokenMessager = circleContracts["TokenMessengerV2"][sourceChain]
+const messageTransminter = circleContracts["MessageTransmitterV2"][destChain]
+const usdcAddress = USDC_CONTRACTS[sourceChain]
+const encoded = encodeAddressToBytes32(destinationAddress);
+
+try {
+  
+const response = await client.createContractExecutionTransaction({
+  walletId: walletId,
+  abiFunctionSignature: 'approve(address,uint256)',
+  abiParameters: [tokenMessager, amount],
+  contractAddress: usdcAddress,
+  fee: {
+    type: 'level',
+    config: {
+      feeLevel: 'MEDIUM'
     }
+  }
+});
 
-   
+
+
+const burn = await client.createContractExecutionTransaction({
+  walletId: walletId,
+  abiFunctionSignature: 'depositForBurn(uint256,uint32,bytes32,address)',
+  abiParameters: [amount, domain[destChain], encoded, usdcAddress],
+  contractAddress: tokenMessager,
+  fee: {
+    type: 'level',
+    config: {
+      feeLevel: 'MEDIUM'
+    }
+  }
+})
+
+// 1. Get the transaction object from Circle Wallets API
+ async function waitForTxHash( id) {
+  const res = await client.getTransaction({ id });
+  if (res.data?.transaction?.txHash) return res.data.transaction.txHash;
+  await new Promise(r => setTimeout(r, 3000));
+  return waitForTxHash(id);
+}
+
+// Usage:
+
+const txHash = await waitForTxHash(burn.data.id);
+console.log('txHash:', txHash);
+ 
+  // 2. Get on-chain transaction receipt using txHash from Circle response
+  const receipt = await web3.eth.getTransactionReceipt(txHash);
+
+  // 3. Decode messageBytes from MessageSent(bytes) event
+  const eventTopic = web3.utils.keccak256('MessageSent(bytes)');
+  const log = receipt.logs.find(l => l.topics[0] === eventTopic);
+  if (!log) {
+    throw new Error('MessageSent event not found in transaction logs');
+  }
+  const decoded = web3.eth.abi.decodeParameters(['bytes'], log.data);
+  const messageBytes = decoded[0];
+  console.log("byte:", messageBytes)
+
+  // 4. Hash the messageBytes with Keccak256 to get messageHash
+  const messageHash = web3.utils.keccak256(messageBytes);
+
+ let attestationResponse = { status: 'pending' };
+
+while (attestationResponse.status !== 'complete') {
+  const response = await fetch(`https://iris-api-sandbox.circle.com/attestations/${messageHash}`);
+  if (response.status === 404) {
+  } else if (!response.ok) {
+    throw new Error(`Iris API error: ${response.status}`);
+  } else {
+    attestationResponse = await response.json();
+    if (attestationResponse.status === 'pending') {
+    }
+  }
+  if (attestationResponse.status !== 'complete') {
+    await new Promise(r => setTimeout(r, 2000));
+  }
+}
+
+
+const mint = await client.createContractExecutionTransaction({
+  walletId: walletId,
+  abiFunctionSignature: "receiveMessage(bytes,bytes)",
+  abiParameters: [messageBytes, attestationResponse.attestation],
+  contractAddress: messageTransminter,
+  fee: {
+    type: 'level',
+    config: {
+      feeLevel: 'MEDIUM'
+    }
+  }
+});
+
+return res.status(200).json({message: "successfully sent", data: mint.data})
+
+} catch (err) {
+  console.log("err:", err)
+  return res.status(500).json({Error: err})
+}
 
 }
-const burn = async (req, res) => {
-  try {
-    const { walletId, burnAmount, destDomain, destAddress, usdcContract, tkMess } = req.body;
-    if (!walletId || !burnAmount || !destDomain || !destAddress || !usdcContract) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    // Encode destination address
-    const encodedDestinationAddress = web3.eth.abi.encodeParameter("address", destAddress);
-
-    const response = await client.createContractExecutionTransaction({
-      walletId,
-      abiFunctionSignature: "burn(uint256,uint32,bytes32,address)",
-      abiParameters: [
-        burnAmount, 
-        destDomain, 
-        encodedDestinationAddress, 
-        usdcContract
-      ],
-      contractAddress: tkMess,
-      fee: { type: "level", config: { feeLevel: "MEDIUM" } }
-    });
-
-    return res.json(response);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-};
-
 
 
 
