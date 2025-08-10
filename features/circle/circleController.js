@@ -281,9 +281,11 @@ const handleCrossChain = async (req, res) => {
   
   
   const {walletId, sourceChain, amount, destChain, destinationAddress} = req.body
+  if (!walletId || !sourceChain || !amount || !destChain || !destinationAddress) return res.status(400).json({message: "All fields required"})
+  
   const amountInSmallestUnit = parseUnits(amount, 6); 
 
-  const tokenMessager = circleContracts["TokenMessengerV2"][sourceChain]
+const tokenMessager = circleContracts["TokenMessengerV2"][sourceChain]
 const messageTransminter = circleContracts["MessageTransmitterV2"][destChain]
 const usdcAddress = USDC_CONTRACTS[sourceChain]
 const encoded = encodeAddressToBytes32(destinationAddress);
