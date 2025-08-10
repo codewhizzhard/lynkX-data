@@ -3,7 +3,7 @@ dotenv.config();
 import { generateEntitySecret } from '@circle-fin/developer-controlled-wallets';
 import { registerEntitySecretCiphertext } from '@circle-fin/developer-controlled-wallets'
 import { initiateDeveloperControlledWalletsClient  } from '@circle-fin/developer-controlled-wallets'
-import { getAddress } from "viem";
+import { getAddress, parseUnits } from "viem";
 import User from "../user/model/userDetails.js";
 import Payments from "./model/paymentDetail.js";
 import { v4 as uuidv4 } from "uuid";
@@ -281,6 +281,7 @@ const handleCrossChain = async (req, res) => {
   
   
   const {walletId, sourceChain, amount, destChain, destinationAddress} = req.body
+  const amountInSmallestUnit = parseUnits(amount, 6); 
 
   const tokenMessager = circleContracts["TokenMessengerV2"][sourceChain]
 const messageTransminter = circleContracts["MessageTransmitterV2"][destChain]
@@ -292,7 +293,7 @@ try {
 const response = await client.createContractExecutionTransaction({
   walletId: walletId,
   abiFunctionSignature: 'approve(address,uint256)',
-  abiParameters: [tokenMessager, amount],
+  abiParameters: [tokenMessager, amountInSmallestUnit],
   contractAddress: usdcAddress,
   fee: {
     type: 'level',
@@ -307,7 +308,7 @@ const response = await client.createContractExecutionTransaction({
 const burn = await client.createContractExecutionTransaction({
   walletId: walletId,
   abiFunctionSignature: 'depositForBurn(uint256,uint32,bytes32,address)',
-  abiParameters: [amount, domain[destChain], encoded, usdcAddress],
+  abiParameters: [amountInSmallestUnit, domain[destChain], encoded, usdcAddress],
   contractAddress: tokenMessager,
   fee: {
     type: 'level',
