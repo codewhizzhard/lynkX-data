@@ -11,7 +11,7 @@ export const circleContracts  = {
    ethereumSepolia: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
     avalancheFuji: "0xa9fB1b3009DCb79E2fe346c16a604B8Fa8aE0a79",
     baseSepolia: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
-    polygonAmoy: "	0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
+    polygonAmoy: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",
   },
   TokenMinterV2: {
     ethereumSepolia: "0x7865fAfC2db2093669d92c0F33AeEF291086BEFD",

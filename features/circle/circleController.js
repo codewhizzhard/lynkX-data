@@ -214,7 +214,7 @@ const postPaymentInfo = async (req, res) => {
         const paymentObj = payment.toObject();
 
         // Add custom field (if needed)
-        paymentObj.paymentLink = `https://localhost:5174/pay/${paymentObj._id}`; 
+        paymentObj.paymentLink = `https://lynkx-ui.onrender.com/pay/${paymentObj._id}`; 
     return res.status(201).json({ message: "Payment created successfully", paymentObj});
 
   } catch (error) {
@@ -271,6 +271,28 @@ function encodeAddressToBytes32(address) {
   return web3.eth.abi.encodeParameter('address', address);
 }
 
+
+//mint
+const minted = async ({walletId, message, attestation, contractAddress}) => {
+  try {
+    if (!walletId || !message || !attestation || !contractAddress) return 
+
+    const response = await client.createContractExecutionTransaction({
+      walletId,
+      abiFunctionSignature: "receiveMessage(bytes,bytes)",
+      abiParameters: [message, attestation],
+      contractAddress,
+      fee: { type: "level", config: { feeLevel: "MEDIUM" } }
+    });
+    console.log("respon:", response.data)
+
+
+  } catch (err) {
+   console.log("err:", err)
+  }
+}; 
+/////
+
 const handleCrossChain = async (req, res) => {
   const domain = {
   polygonAmoy: 7,
@@ -280,8 +302,8 @@ const handleCrossChain = async (req, res) => {
   }
   
   
-  const {walletId, sourceChain, amount, destChain, destinationAddress} = req.body
-  if (!walletId || !sourceChain || !amount || !destChain || !destinationAddress) return res.status(400).json({message: "All fields required"})
+  const {walletId, sourceChain, amount, destChain, destinationAddress, destWalletId} = req.body
+  if (!walletId || !sourceChain || !amount || !destChain || !destinationAddress || !destWalletId) return res.status(400).json({message: "All fields required"})
   
   const amountInSmallestUnit = parseUnits(amount, 6).toString(); 
 
@@ -292,7 +314,8 @@ const encoded = encodeAddressToBytes32(destinationAddress);
 
 try {
   
-const response = await client.createContractExecutionTransaction({
+  // 1️⃣ Send approve transaction
+const approveTx = await client.createContractExecutionTransaction({
   walletId: walletId,
   abiFunctionSignature: 'approve(address,uint256)',
   abiParameters: [tokenMessager, amountInSmallestUnit],
@@ -305,7 +328,26 @@ const response = await client.createContractExecutionTransaction({
   }
 });
 
+const approveTxId = approveTx.data.id;
+console.log(`✅ Approve transaction created. ID: ${approveTxId}`);
 
+// 2️⃣ Wait for approve confirmation
+let approveStatus = "PENDING";
+while (approveStatus === "PENDING") {
+  await new Promise((res) => setTimeout(res, 5000));
+  const txStatus = await client.getTransaction({id: approveTxId});
+  console.log("sta:", txStatus)
+  approveStatus = txStatus.data.transaction.state;
+  console.log(`🔄 Approval status: ${approveStatus}`);
+}
+
+if (approveStatus !== "SENT") {
+  throw new Error(`Approval failed with status: ${approveStatus}`);
+}
+
+console.log("🎉 Approval confirmed on-chain!");
+
+console.log("destchsain", domain[destChain])
 
 const burn = await client.createContractExecutionTransaction({
   walletId: walletId,
@@ -319,20 +361,31 @@ const burn = await client.createContractExecutionTransaction({
     }
   }
 })
+console.log("bbb:", burn.data.id)
+async function waitForTxHash(id, maxWaitMs = 60000, intervalMs = 3000) {
+  const start = Date.now();
 
-// 1. Get the transaction object from Circle Wallets API
- async function waitForTxHash( id) {
-  const res = await client.getTransaction({ id });
-  if (res.data?.transaction?.txHash) return res.data.transaction.txHash;
-  await new Promise(r => setTimeout(r, 3000));
-  return waitForTxHash(id);
+  while (Date.now() - start < maxWaitMs) {
+    const res = await client.getTransaction({ id });
+    console.log("res:", res)
+
+    if (res.data?.transaction?.txHash) {
+      return res.data.transaction.txHash;
+    }
+
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+
+  return null; // Timed out without finding txHash
 }
+
 
 // Usage:
 
 const txHash = await waitForTxHash(burn.data.id);
 console.log('txHash:', txHash);
- 
+console.log("retrieving messages")
+
   // 2. Get on-chain transaction receipt using txHash from Circle response
   const receipt = await web3.eth.getTransactionReceipt(txHash);
 
@@ -349,7 +402,7 @@ console.log('txHash:', txHash);
   // 4. Hash the messageBytes with Keccak256 to get messageHash
   const messageHash = web3.utils.keccak256(messageBytes);
 
- let attestationResponse = { status: 'pending' };
+ let attestationResponse = { status: 'pending' }; 
 
 while (attestationResponse.status !== 'complete') {
   const response = await fetch(`https://iris-api-sandbox.circle.com/attestations/${messageHash}`);
@@ -366,9 +419,9 @@ while (attestationResponse.status !== 'complete') {
   }
 }
 
-
-const mint = await client.createContractExecutionTransaction({
-  walletId: walletId,
+ 
+ const mint = await client.createContractExecutionTransaction({
+  walletId: destWalletId,
   abiFunctionSignature: "receiveMessage(bytes,bytes)",
   abiParameters: [messageBytes, attestationResponse.attestation],
   contractAddress: messageTransminter,
@@ -378,9 +431,29 @@ const mint = await client.createContractExecutionTransaction({
       feeLevel: 'MEDIUM'
     }
   }
-});
+}); 
 
 return res.status(200).json({message: "successfully sent", data: mint.data})
+ /* console.log("minted:", mint.data)
+let mintStatus = mint.data.state;
+while (mintStatus === "INITIATED" || mintStatus === "PENDING" || mintStatus === "IN_PROGRESS") {
+  await new Promise(r => setTimeout(r, 5000));
+  const txInfo = await client.getTransaction({id: mint.data.id});
+  console.log("minted:", txInfo.data.transaction)
+  mintStatus = txInfo.data.transaction.state;
+  console.log("Mint status:", mintStatus);
+  if (mintStatus === "FAILED") {
+    console.error("Mint failed:", txInfo.data.transaction.errorReason, txInfo.data.transaction.errorDetails);
+    break;
+  }
+  if (mintStatus === "COMPLETE") {
+    console.log("✅ Mint successful:", txInfo.data.transaction.txHash);
+    break;
+  }
+}
+ 
+ */
+
 
 } catch (err) {
   console.log("err:", err)
@@ -388,6 +461,8 @@ return res.status(200).json({message: "successfully sent", data: mint.data})
 }
 
 }
+
+
 
 
 
