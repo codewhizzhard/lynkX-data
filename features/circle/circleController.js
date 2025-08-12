@@ -368,6 +368,9 @@ async function waitForTxHash(id, maxWaitMs = 60000, intervalMs = 3000) {
   while (Date.now() - start < maxWaitMs) {
     const res = await client.getTransaction({ id });
     console.log("res:", res)
+    if (res.data?.transaction.state === "FAILED") {
+      return res.data.transaction.state
+    }
 
     if (res.data?.transaction?.txHash) {
       return res.data.transaction.txHash;
@@ -383,6 +386,10 @@ async function waitForTxHash(id, maxWaitMs = 60000, intervalMs = 3000) {
 // Usage:
 
 const txHash = await waitForTxHash(burn.data.id);
+if (txHash === "FAILED") {
+  return res.status(404).json({message: txHash})
+}
+
 console.log('txHash:', txHash);
 console.log("retrieving messages")
 
