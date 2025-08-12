@@ -11,10 +11,9 @@ import mongoose from "mongoose";
 import Web3 from "web3";
 import { getMsgAndAttes } from "./cctpv2/cctpv2Controller.js";
 import https from "https";
-import { circleContracts, USDC_CONTRACTS } from "./cctpv2/circleContracts.js";
+import { circleContracts, RPC_URLS, USDC_CONTRACTS } from "./cctpv2/circleContracts.js";
 
 
-const web3 = new Web3(`https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`);
 
 const agent = new https.Agent({ keepAlive: false,  maxCachedSessions: 0,  minVersion: 'TLSv1.2',
   maxVersion: 'TLSv1.3', });
@@ -266,10 +265,7 @@ const mint = async (req, res) => {
   }
 }; 
 
-function encodeAddressToBytes32(address) {
-  // This returns a hex string padded as a Solidity address representation (32 bytes)
-  return web3.eth.abi.encodeParameter('address', address);
-}
+
 
 
 //mint
@@ -304,6 +300,12 @@ const handleCrossChain = async (req, res) => {
   
   const {walletId, sourceChain, amount, destChain, destinationAddress, destWalletId} = req.body
   if (!walletId || !sourceChain || !amount || !destChain || !destinationAddress || !destWalletId) return res.status(400).json({message: "All fields required"})
+    const web3 = new Web3(RPC_URLS[sourceChain]);
+
+  function encodeAddressToBytes32(address) {
+  // This returns a hex string padded as a Solidity address representation (32 bytes)
+  return web3.eth.abi.encodeParameter('address', address);
+}
   
   const amountInSmallestUnit = parseUnits(amount, 6).toString(); 
 

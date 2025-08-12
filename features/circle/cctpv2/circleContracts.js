@@ -40,12 +40,20 @@ export const USDC_CONTRACTS = {
   arbitrumSepolia: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
   avalancheFuji: "0x5425890298aed601595a70AB815c96711a31Bc65",
 };
+
+export const RPC_URLS = {
+  ethereumSepolia: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
+  polygonAmoy: `https://rpc-amoy.polygon.technology/`,
+  baseSepolia: `https://sepolia.base.org`,
+  avalancheFuji: `https://api.avax-test.network/ext/bc/C/rpc`
+};
+
 export const chainExplorers = {
   ethereumSepolia: {
     apiUrl: "https://api-sepolia.etherscan.io/api",
     apiKey: process.env.ETHERSCAN_API_KEY
   },
-  /* avalancheFuji: {
+  avalancheFuji: {
     apiUrl: "https://api-testnet.snowtrace.io/api",
     apiKey: process.env.SNOWTRACE_API_KEY
   },
@@ -68,7 +76,7 @@ export const chainExplorers = {
   unichainSepolia: {
     apiUrl: "https://api-sepolia.etherscan.io/api", // fallback to etherscan (custom)
     apiKey: process.env.ETHERSCAN_API_KEY
-  } */
+  }
 };
 
 // knownContracts.js
